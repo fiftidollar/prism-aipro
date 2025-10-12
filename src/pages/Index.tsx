@@ -57,7 +57,7 @@ const Index = () => {
             <Button
               size="lg"
               className="gradient-primary hover:opacity-90 transition-opacity glow-primary text-lg px-8"
-              onClick={() => navigate("/chat")}
+              onClick={() => navigate("/auth")}
             >
               Начать работу
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -128,7 +128,7 @@ const Index = () => {
           <Button
             size="lg"
             className="gradient-primary hover:opacity-90 transition-opacity glow-primary text-lg px-8"
-            onClick={() => navigate("/chat")}
+            onClick={() => navigate("/auth")}
           >
             Начать бесплатно
             <ArrowRight className="ml-2 w-5 h-5" />
