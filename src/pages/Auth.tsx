@@ -27,13 +27,13 @@ const Auth = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/chat");
+        navigate("/dashboard");
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/chat");
+        navigate("/dashboard");
       }
     });
 
@@ -81,7 +81,7 @@ const Auth = () => {
             data: {
               full_name: validationData.fullName || "",
             },
-            emailRedirectTo: `${window.location.origin}/chat`,
+            emailRedirectTo: `${window.location.origin}/dashboard`,
           },
         });
 
