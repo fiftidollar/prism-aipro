@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ChatsList } from "@/components/ChatsList";
 
 interface Conversation {
   id: string;
@@ -92,12 +93,7 @@ const Dashboard = () => {
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => {
-                  setActiveSection(item.id);
-                  if (item.id === "chats") {
-                    navigate("/chat");
-                  }
-                }}
+                onClick={() => setActiveSection(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   activeSection === item.id
                     ? "bg-primary/20 text-primary"
@@ -125,8 +121,11 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        <div className="p-8">
-          <h2 className="text-3xl font-bold mb-8">Dashboard</h2>
+        {activeSection === "chats" ? (
+          <ChatsList />
+        ) : (
+          <div className="p-8">
+            <h2 className="text-3xl font-bold mb-8">Dashboard</h2>
 
           {/* Action Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -256,7 +255,8 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
