@@ -10,6 +10,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatsList } from "@/components/ChatsList";
 import { ChatInterface } from "@/components/ChatInterface";
 import { PersonasList } from "@/components/PersonasList";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface Conversation {
   id: string;
@@ -23,6 +26,10 @@ const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [personas, setPersonas] = useState<any[]>([]);
+  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
+  const [selectedPersonaForNewChat, setSelectedPersonaForNewChat] = useState<string>("");
+  const [selectedModelForNewChat, setSelectedModelForNewChat] = useState("google/gemini-2.5-flash");
   const activeChatId = searchParams.get('chat');
 
   useEffect(() => {
@@ -34,8 +41,20 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       loadConversations();
+      loadPersonas();
     }
   }, [user]);
+
+  const loadPersonas = async () => {
+    const { data } = await supabase
+      .from('personas')
+      .select('*')
+      .order('name');
+    
+    if (data) {
+      setPersonas(data);
+    }
+  };
 
   useEffect(() => {
     if (activeChatId) {
@@ -136,7 +155,7 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {activeSection === "chats" && activeChatId ? (
+        {activeChatId ? (
           <ChatInterface 
             conversationId={activeChatId} 
             onConversationUpdate={loadConversations}
@@ -153,22 +172,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card 
               className="glass-card border-2 border-primary/20 hover:border-primary/40 transition-all cursor-pointer group"
-              onClick={async () => {
-                const { data: newConv } = await supabase
-                  .from('conversations')
-                  .insert({
-                    title: 'Новый чат',
-                    user_id: user?.id
-                  })
-                  .select()
-                  .single();
-                
-                if (newConv) {
-                  setActiveSection("chats");
-                  setSearchParams({ chat: newConv.id });
-                  loadConversations();
-                }
-              }}
+              onClick={() => setIsNewChatDialogOpen(true)}
             >
               <CardHeader>
                 <div className="flex items-center gap-4">
@@ -298,6 +302,74 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* New Chat Dialog */}
+      <Dialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Создать новый чат</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Модель</Label>
+              <Select value={selectedModelForNewChat} onValueChange={setSelectedModelForNewChat}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="google/gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
+                  <SelectItem value="google/gemini-2.5-pro">Gemini 2.5 Pro</SelectItem>
+                  <SelectItem value="openai/gpt-5">GPT-5</SelectItem>
+                  <SelectItem value="openai/gpt-5-mini">GPT-5 Mini</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Персона</Label>
+              <Select value={selectedPersonaForNewChat} onValueChange={setSelectedPersonaForNewChat}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите персону (опционально)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Без персоны</SelectItem>
+                  {personas.map((persona) => (
+                    <SelectItem key={persona.id} value={persona.id}>
+                      {persona.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              onClick={async () => {
+                const { data: newConv } = await supabase
+                  .from('conversations')
+                  .insert({
+                    title: 'Новый чат',
+                    user_id: user?.id,
+                    model: selectedModelForNewChat
+                  })
+                  .select()
+                  .single();
+                
+                if (newConv) {
+                  setSearchParams({ 
+                    chat: newConv.id,
+                    ...(selectedPersonaForNewChat && { persona: selectedPersonaForNewChat })
+                  });
+                  loadConversations();
+                  setIsNewChatDialogOpen(false);
+                  setSelectedPersonaForNewChat("");
+                  setSelectedModelForNewChat("google/gemini-2.5-flash");
+                }
+              }}
+              className="w-full"
+            >
+              Создать чат
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

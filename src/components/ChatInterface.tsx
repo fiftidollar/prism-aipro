@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,6 +28,7 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInterfaceProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [message, setMessage] = useState("");
   const [selectedModel, setSelectedModel] = useState("google/gemini-2.5-flash");
   const [selectedPersona, setSelectedPersona] = useState<string>("");
@@ -36,6 +38,14 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
   const [personas, setPersonas] = useState<any[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Initialize from URL params
+  useEffect(() => {
+    const personaFromUrl = searchParams.get('persona');
+    if (personaFromUrl) {
+      setSelectedPersona(personaFromUrl);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     loadModels();
@@ -109,6 +119,16 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
 
   const loadMessages = async () => {
     if (!conversationId) return;
+    
+    const { data: conversation } = await supabase
+      .from('conversations')
+      .select('model')
+      .eq('id', conversationId)
+      .single();
+    
+    if (conversation?.model) {
+      setSelectedModel(conversation.model);
+    }
     
     const { data } = await supabase
       .from('messages')
