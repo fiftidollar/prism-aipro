@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MessageSquare, Image as ImageIcon, FileText, Users, Briefcase, Users2, Gift, LogOut, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatsList } from "@/components/ChatsList";
+import { ChatInterface } from "@/components/ChatInterface";
 
 interface Conversation {
   id: string;
@@ -17,9 +18,11 @@ interface Conversation {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const activeChatId = searchParams.get('chat');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -32,6 +35,12 @@ const Dashboard = () => {
       loadConversations();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (activeChatId) {
+      setActiveSection("chats");
+    }
+  }, [activeChatId]);
 
   const loadConversations = async () => {
     const { data } = await supabase
@@ -121,7 +130,12 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {activeSection === "chats" ? (
+        {activeSection === "chats" && activeChatId ? (
+          <ChatInterface 
+            conversationId={activeChatId} 
+            onConversationUpdate={loadConversations}
+          />
+        ) : activeSection === "chats" ? (
           <ChatsList />
         ) : (
           <div className="p-8">
@@ -131,7 +145,10 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card 
               className="glass-card border-2 border-primary/20 hover:border-primary/40 transition-all cursor-pointer group"
-              onClick={() => navigate("/chat")}
+              onClick={() => {
+                setActiveSection("chats");
+                setSearchParams({});
+              }}
             >
               <CardHeader>
                 <div className="flex items-center gap-4">
@@ -190,7 +207,10 @@ const Dashboard = () => {
                     <Card 
                       key={conv.id}
                       className="glass-card hover:bg-primary/5 transition-colors cursor-pointer"
-                      onClick={() => navigate("/chat")}
+                      onClick={() => {
+                        setActiveSection("chats");
+                        setSearchParams({ chat: conv.id });
+                      }}
                     >
                       <CardContent className="p-4 flex items-center gap-3">
                         <Avatar className="w-10 h-10 bg-primary/20">

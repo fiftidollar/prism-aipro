@@ -81,8 +81,28 @@ export const ChatsList = () => {
     });
   };
 
-  const handleNewChat = () => {
-    navigate('/chat');
+  const handleNewChat = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('conversations')
+      .insert({ 
+        title: 'Новый чат',
+        user_id: user.id,
+        model: 'google/gemini-2.5-flash'
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      toast.error("Не удалось создать чат");
+      return;
+    }
+
+    if (data) {
+      toast.success("Новый чат создан");
+      navigate(`/dashboard?chat=${data.id}`);
+    }
   };
 
   const filteredConversations = conversations.filter(conv =>
@@ -169,7 +189,7 @@ export const ChatsList = () => {
               return (
                 <div
                   key={conv.id}
-                  onClick={() => navigate(`/chat?id=${conv.id}`)}
+                  onClick={() => navigate(`/dashboard?chat=${conv.id}`)}
                   className="flex items-center gap-4 px-6 py-4 hover:bg-muted/50 cursor-pointer transition-colors group"
                 >
                   {/* Colored indicator */}
@@ -209,7 +229,7 @@ export const ChatsList = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-popover">
-                      <DropdownMenuItem onClick={() => navigate(`/chat?id=${conv.id}`)}>
+                      <DropdownMenuItem onClick={() => navigate(`/dashboard?chat=${conv.id}`)}>
                         Открыть
                       </DropdownMenuItem>
                       <DropdownMenuItem>
