@@ -102,7 +102,12 @@ const Dashboard = () => {
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => {
+                  setActiveSection(item.id);
+                  if (item.id === "chats") {
+                    setSearchParams({});
+                  }
+                }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   activeSection === item.id
                     ? "bg-primary/20 text-primary"
@@ -145,9 +150,21 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card 
               className="glass-card border-2 border-primary/20 hover:border-primary/40 transition-all cursor-pointer group"
-              onClick={() => {
-                setActiveSection("chats");
-                setSearchParams({});
+              onClick={async () => {
+                const { data: newConv } = await supabase
+                  .from('conversations')
+                  .insert({
+                    title: 'Новый чат',
+                    user_id: user?.id
+                  })
+                  .select()
+                  .single();
+                
+                if (newConv) {
+                  setActiveSection("chats");
+                  setSearchParams({ chat: newConv.id });
+                  loadConversations();
+                }
               }}
             >
               <CardHeader>
