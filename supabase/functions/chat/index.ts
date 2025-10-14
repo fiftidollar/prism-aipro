@@ -91,11 +91,66 @@ serve(async (req) => {
       model: model,
     });
 
-    // Update conversation timestamp
-    await supabaseClient
-      .from('conversations')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', conversationId);
+    // Check if this is the first message and generate title
+    const { count } = await supabaseClient
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('conversation_id', conversationId);
+
+    if (count === 2) { // First user message + first assistant response
+      console.log('Generating conversation title...');
+      
+      // Generate title using AI
+      const titleResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openRouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': Deno.env.get('SUPABASE_URL') ?? '',
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-3.5-turbo',
+          messages: [
+            { 
+              role: 'system', 
+              content: 'Generate a short, concise title (3-5 words maximum) for a conversation based on the user\'s first message. Return ONLY the title, nothing else. The title should be in the same language as the user\'s message.' 
+            },
+            { role: 'user', content: message }
+          ],
+          max_tokens: 20,
+          temperature: 0.7,
+        }),
+      });
+
+      if (titleResponse.ok) {
+        const titleData = await titleResponse.json();
+        const generatedTitle = titleData.choices[0]?.message?.content?.trim();
+        
+        if (generatedTitle) {
+          console.log('Generated title:', generatedTitle);
+          await supabaseClient
+            .from('conversations')
+            .update({ 
+              title: generatedTitle,
+              updated_at: new Date().toISOString() 
+            })
+            .eq('id', conversationId);
+        }
+      } else {
+        console.error('Failed to generate title');
+        // Update only timestamp if title generation fails
+        await supabaseClient
+          .from('conversations')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', conversationId);
+      }
+    } else {
+      // Update conversation timestamp for subsequent messages
+      await supabaseClient
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', conversationId);
+    }
 
     console.log('Chat response sent successfully');
 
