@@ -124,7 +124,7 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
       .from('conversations')
       .select('model')
       .eq('id', conversationId)
-      .single();
+      .maybeSingle();
     
     if (conversation?.model) {
       setSelectedModel(conversation.model);
@@ -141,6 +141,19 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
     }
   };
 
+  // Persist model change to conversation
+  useEffect(() => {
+    if (!conversationId) return;
+    supabase.from('conversations').update({ model: selectedModel }).eq('id', conversationId);
+  }, [selectedModel, conversationId]);
+
+  // Reflect persona in URL for persistence
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (selectedPersona) params.set('persona', selectedPersona);
+    else params.delete('persona');
+    setSearchParams(params, { replace: true });
+  }, [selectedPersona]);
   const handleSend = async () => {
     if (!message.trim() || !conversationId) return;
 
