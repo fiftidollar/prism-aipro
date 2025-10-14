@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversationId, model } = await req.json();
+    const { message, conversationId, model, personaId } = await req.json();
     
-    console.log('Chat request:', { conversationId, model, messageLength: message?.length });
+    console.log('Chat request:', { conversationId, model, personaId, messageLength: message?.length });
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -46,6 +46,33 @@ serve(async (req) => {
 
     const conversationHistory = messages || [];
 
+    // Get persona instructions if personaId is provided
+    let systemPrompt = null;
+    if (personaId) {
+      const { data: persona } = await supabaseClient
+        .from('personas')
+        .select('instructions')
+        .eq('id', personaId)
+        .single();
+      
+      if (persona) {
+        systemPrompt = persona.instructions;
+        console.log('Using persona instructions');
+      }
+    }
+
+    // Prepare messages for API
+    const apiMessages = systemPrompt 
+      ? [
+          { role: 'system', content: systemPrompt },
+          ...conversationHistory,
+          { role: 'user', content: message }
+        ]
+      : [
+          ...conversationHistory,
+          { role: 'user', content: message }
+        ];
+
     // Call OpenRouter API
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -56,10 +83,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: model || 'openai/gpt-3.5-turbo',
-        messages: [
-          ...conversationHistory,
-          { role: 'user', content: message }
-        ],
+        messages: apiMessages,
       }),
     });
 

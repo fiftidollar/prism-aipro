@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChatsList } from "@/components/ChatsList";
 import { ChatInterface } from "@/components/ChatInterface";
+import { PersonasList } from "@/components/PersonasList";
 
 interface Conversation {
   id: string;
@@ -142,6 +143,8 @@ const Dashboard = () => {
           />
         ) : activeSection === "chats" ? (
           <ChatsList />
+        ) : activeSection === "personas" ? (
+          <PersonasList />
         ) : (
           <div className="p-8">
             <h2 className="text-3xl font-bold mb-8">Dashboard</h2>

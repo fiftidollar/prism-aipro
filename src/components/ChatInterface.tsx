@@ -29,24 +29,29 @@ interface ChatInterfaceProps {
 export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInterfaceProps) => {
   const [message, setMessage] = useState("");
   const [selectedModel, setSelectedModel] = useState("google/gemini-2.5-flash");
-  const [selectedPersonality, setSelectedPersonality] = useState("professional");
+  const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [models, setModels] = useState<AIModel[]>([]);
+  const [personas, setPersonas] = useState<any[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const personalities = [
-    { id: "professional", name: "Профессионал" },
-    { id: "creative", name: "Креативный" },
-    { id: "expert-copywriter", name: "Эксперт-копирайтер" },
-    { id: "analyst", name: "Аналитик" },
-    { id: "friendly", name: "Дружелюбный" },
-  ];
-
   useEffect(() => {
     loadModels();
+    loadPersonas();
   }, []);
+
+  const loadPersonas = async () => {
+    const { data, error } = await supabase
+      .from("personas")
+      .select("*")
+      .order("name");
+    
+    if (!error && data) {
+      setPersonas(data);
+    }
+  };
 
   useEffect(() => {
     if (conversationId) {
@@ -129,6 +134,7 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
           message: userMessage,
           conversationId: conversationId,
           model: selectedModel,
+          personaId: selectedPersona || null,
         },
       });
 
@@ -238,14 +244,15 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
             </SelectContent>
           </Select>
           
-          <Select value={selectedPersonality} onValueChange={setSelectedPersonality}>
+          <Select value={selectedPersona} onValueChange={setSelectedPersona}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue />
+              <SelectValue placeholder="Выберите персону" />
             </SelectTrigger>
             <SelectContent>
-              {personalities.map((personality) => (
-                <SelectItem key={personality.id} value={personality.id}>
-                  {personality.name}
+              <SelectItem value="">Без персоны</SelectItem>
+              {personas.map((persona) => (
+                <SelectItem key={persona.id} value={persona.id}>
+                  {persona.name}
                 </SelectItem>
               ))}
             </SelectContent>
