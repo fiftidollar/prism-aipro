@@ -29,11 +29,20 @@ interface ChatInterfaceProps {
 export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInterfaceProps) => {
   const [message, setMessage] = useState("");
   const [selectedModel, setSelectedModel] = useState("google/gemini-2.5-flash");
+  const [selectedPersonality, setSelectedPersonality] = useState("professional");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [models, setModels] = useState<AIModel[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  const personalities = [
+    { id: "professional", name: "Профессионал" },
+    { id: "creative", name: "Креативный" },
+    { id: "expert-copywriter", name: "Эксперт-копирайтер" },
+    { id: "analyst", name: "Аналитик" },
+    { id: "friendly", name: "Дружелюбный" },
+  ];
 
   useEffect(() => {
     loadModels();
@@ -215,15 +224,28 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between bg-card">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-[250px]">
+            <SelectTrigger className="w-[220px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {models.map((model) => (
                 <SelectItem key={model.id} value={model.id}>
                   {model.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={selectedPersonality} onValueChange={setSelectedPersonality}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {personalities.map((personality) => (
+                <SelectItem key={personality.id} value={personality.id}>
+                  {personality.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -260,12 +282,15 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
                       : 'bg-card border border-border'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  {msg.model && msg.role === 'assistant' && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {msg.model}
-                    </p>
+                  {msg.role === 'assistant' && msg.model && (
+                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/50">
+                      <Sparkles className="w-3.5 h-3.5 text-primary" />
+                      <p className="text-xs font-medium text-foreground">
+                        {models.find(m => m.id === msg.model)?.name || msg.model}
+                      </p>
+                    </div>
                   )}
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 {msg.role === 'user' && (
                   <Avatar className="w-8 h-8">
