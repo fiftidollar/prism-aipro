@@ -277,12 +277,12 @@ export const ChatInterface = ({ conversationId, onConversationUpdate }: ChatInte
             </SelectContent>
           </Select>
           
-          <Select value={selectedPersona} onValueChange={setSelectedPersona}>
+          <Select value={selectedPersona} onValueChange={(v) => setSelectedPersona(v === 'none' ? '' : v)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Выберите персону" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Без персоны</SelectItem>
+              <SelectItem value="none">Без персоны</SelectItem>
               {personas.map((persona) => (
                 <SelectItem key={persona.id} value={persona.id}>
                   {persona.name}

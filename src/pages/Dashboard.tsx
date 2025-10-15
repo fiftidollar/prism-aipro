@@ -329,12 +329,12 @@ const Dashboard = () => {
             </div>
             <div className="space-y-2">
               <Label>Персона</Label>
-              <Select value={selectedPersonaForNewChat} onValueChange={setSelectedPersonaForNewChat}>
+              <Select value={selectedPersonaForNewChat} onValueChange={(v) => setSelectedPersonaForNewChat(v === 'none' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите персону (опционально)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Без персоны</SelectItem>
+                  <SelectItem value="none">Без персоны</SelectItem>
                   {personas.map((persona) => (
                     <SelectItem key={persona.id} value={persona.id}>
                       {persona.name}
