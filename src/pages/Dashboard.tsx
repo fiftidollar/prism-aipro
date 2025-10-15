@@ -25,12 +25,14 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading, signOut } = useAuth();
+  const { toast } = useToast();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [personas, setPersonas] = useState<any[]>([]);
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
   const [selectedPersonaForNewChat, setSelectedPersonaForNewChat] = useState<string>("");
   const [selectedModelForNewChat, setSelectedModelForNewChat] = useState("google/gemini-2.5-flash");
+  const [creatingChat, setCreatingChat] = useState(false);
   const activeChatId = searchParams.get('chat');
 
   useEffect(() => {
@@ -343,30 +345,47 @@ const Dashboard = () => {
             </div>
             <Button 
               onClick={async () => {
-                const { data: newConv } = await supabase
-                  .from('conversations')
-                  .insert({
-                    title: 'Новый чат',
-                    user_id: user?.id,
-                    model: selectedModelForNewChat
-                  })
-                  .select()
-                  .single();
-                
-                if (newConv) {
+                if (!user) {
+                  toast({ title: 'Требуется вход', description: 'Пожалуйста, войдите в аккаунт', variant: 'destructive' });
+                  return;
+                }
+                try {
+                  setCreatingChat(true);
+                  const { data: newConv, error } = await supabase
+                    .from('conversations')
+                    .insert({
+                      title: 'Новый чат',
+                      user_id: user.id,
+                      model: selectedModelForNewChat
+                    })
+                    .select()
+                    .maybeSingle();
+
+                  if (error || !newConv) {
+                    toast({ title: 'Ошибка', description: 'Не удалось создать чат', variant: 'destructive' });
+                    return;
+                  }
+
                   setSearchParams({ 
                     chat: newConv.id,
                     ...(selectedPersonaForNewChat && { persona: selectedPersonaForNewChat })
                   });
+                  setActiveSection('chats');
                   loadConversations();
                   setIsNewChatDialogOpen(false);
-                  setSelectedPersonaForNewChat("");
-                  setSelectedModelForNewChat("google/gemini-2.5-flash");
+                  setSelectedPersonaForNewChat('');
+                  setSelectedModelForNewChat('google/gemini-2.5-flash');
+                  toast({ title: 'Новый чат создан' });
+                } catch (e) {
+                  toast({ title: 'Ошибка', description: 'Не удалось создать чат', variant: 'destructive' });
+                } finally {
+                  setCreatingChat(false);
                 }
               }}
+              disabled={creatingChat}
               className="w-full"
             >
-              Создать чат
+              {creatingChat ? 'Создание...' : 'Создать чат'}
             </Button>
           </div>
         </DialogContent>
