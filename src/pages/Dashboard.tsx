@@ -112,11 +112,13 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen gradient-hero flex">
       {/* Sidebar */}
-      <div className="w-64 glass-card border-r border-border flex flex-col">
-        <div className="p-6 border-b border-border">
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent gradient-primary flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
-            AI Hub
+      <div className="w-64 glass-card border-r border-border/50 flex flex-col shadow-lg">
+        <div className="p-6 border-b border-border/50">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <div className="p-2 rounded-xl gradient-primary">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <span className="bg-clip-text text-transparent gradient-primary">AI Hub</span>
           </h1>
         </div>
 
@@ -131,10 +133,10 @@ const Dashboard = () => {
                     setSearchParams({});
                   }
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                   activeSection === item.id
-                    ? "bg-primary/20 text-primary"
-                    : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                    ? "bg-gradient-to-r from-primary/20 to-accent/20 text-primary shadow-sm border border-primary/20"
+                    : "text-muted-foreground hover:bg-gradient-to-r hover:from-secondary/50 hover:to-secondary/30 hover:text-foreground"
                 }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -144,11 +146,11 @@ const Dashboard = () => {
           </nav>
         </ScrollArea>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border/50">
           <Button
             onClick={handleSignOut}
             variant="outline"
-            className="w-full"
+            className="w-full border-primary/30 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10"
           >
             <LogOut className="w-4 h-4 mr-2" />
             Выйти
@@ -169,26 +171,30 @@ const Dashboard = () => {
           <PersonasList />
         ) : (
           <div className="p-8">
-            <h2 className="text-3xl font-bold mb-8">Dashboard</h2>
+            <div className="mb-8">
+              <h2 className="text-4xl font-bold bg-clip-text text-transparent gradient-primary mb-2">Dashboard</h2>
+              <p className="text-muted-foreground">Начните создавать с помощью AI</p>
+            </div>
 
           {/* Action Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card 
-              className="glass-card border-2 border-primary/20 hover:border-primary/40 transition-all cursor-pointer group"
+              className="glass-card border-2 border-primary/30 hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer group overflow-hidden relative"
               onClick={() => setIsNewChatDialogOpen(true)}
             >
-              <CardHeader>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardHeader className="relative">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-blue-500/10 text-blue-500 group-hover:scale-110 transition-transform">
+                  <div className="p-3 rounded-xl gradient-primary text-white group-hover:scale-110 transition-transform shadow-md">
                     <MessageSquare className="w-8 h-8" />
                   </div>
                   <div className="flex-1">
-                    <CardTitle className="text-xl">Start a New Chat</CardTitle>
+                    <CardTitle className="text-xl text-primary">Начать новый чат</CardTitle>
                     <CardDescription>
-                      Get answers or create with the most powerful chat models.
+                      Получайте ответы с помощью мощных AI моделей
                     </CardDescription>
                   </div>
-                  <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity text-primary">
                     <span className="text-2xl">+</span>
                   </Button>
                 </div>
@@ -196,21 +202,22 @@ const Dashboard = () => {
             </Card>
 
             <Card 
-              className="glass-card border-2 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer group"
+              className="glass-card border-2 border-accent/30 hover:border-accent/50 hover:shadow-lg transition-all cursor-pointer group overflow-hidden relative"
               onClick={() => setActiveSection("images")}
             >
-              <CardHeader>
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardHeader className="relative">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500 group-hover:scale-110 transition-transform">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-accent to-primary text-white group-hover:scale-110 transition-transform shadow-md">
                     <ImageIcon className="w-8 h-8" />
                   </div>
                   <div className="flex-1">
-                    <CardTitle className="text-xl">Generate an Image</CardTitle>
+                    <CardTitle className="text-xl" style={{ color: 'hsl(280 70% 55%)' }}>Создать изображение</CardTitle>
                     <CardDescription>
-                      Create something visually stunning using your words!
+                      Создайте что-то визуально потрясающее!
                     </CardDescription>
                   </div>
-                  <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'hsl(280 70% 55%)' }}>
                     <span className="text-2xl">+</span>
                   </Button>
                 </div>
@@ -221,32 +228,33 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Chats */}
             <div>
-              <h3 className="text-xl font-semibold mb-4">Recent Chats</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-primary">Недавние чаты</h3>
               <div className="space-y-3">
                 {conversations.length === 0 ? (
-                  <Card className="glass-card">
+                  <Card className="glass-card border-primary/20">
                     <CardContent className="p-6 text-center text-muted-foreground">
-                      Нет чатов. Начните новый разговор!
+                      <Sparkles className="w-12 h-12 mx-auto mb-3 text-primary/30" />
+                      <p>Нет чатов. Начните новый разговор!</p>
                     </CardContent>
                   </Card>
                 ) : (
                   conversations.map((conv) => (
                     <Card 
                       key={conv.id}
-                      className="glass-card hover:bg-primary/5 transition-colors cursor-pointer"
+                      className="glass-card hover:border-primary/40 hover:shadow-md transition-all cursor-pointer border border-border/50 group"
                       onClick={() => {
                         setActiveSection("chats");
                         setSearchParams({ chat: conv.id });
                       }}
                     >
                       <CardContent className="p-4 flex items-center gap-3">
-                        <Avatar className="w-10 h-10 bg-primary/20">
-                          <AvatarFallback className="bg-primary/10 text-primary">
+                        <Avatar className="w-10 h-10 gradient-primary">
+                          <AvatarFallback className="gradient-primary text-white">
                             <Sparkles className="w-5 h-5" />
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{conv.title}</p>
+                          <p className="font-medium truncate group-hover:text-primary transition-colors">{conv.title}</p>
                           <p className="text-sm text-muted-foreground">
                             {formatDate(conv.updated_at)}
                           </p>
@@ -260,40 +268,42 @@ const Dashboard = () => {
 
             {/* Announcements */}
             <div>
-              <h3 className="text-xl font-semibold mb-4">Announcements</h3>
+              <h3 className="text-2xl font-semibold mb-4 text-primary">Объявления</h3>
               <div className="space-y-4">
-                <Card className="glass-card bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
-                  <CardContent className="p-6">
+                <Card className="glass-card bg-gradient-to-br from-primary/10 to-accent/5 border-primary/30 hover:border-primary/40 transition-all overflow-hidden relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <CardContent className="p-6 relative">
                     <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-lg bg-orange-500/20 text-orange-500">
+                      <div className="p-3 rounded-xl gradient-primary text-white shadow-md">
                         <Sparkles className="w-8 h-8" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-lg mb-2">The AI Academy</h4>
+                        <h4 className="font-semibold text-lg mb-2 text-primary">AI Academy</h4>
                         <p className="text-sm text-muted-foreground mb-4">
-                          An ongoing learning hub—FREE for subscribers—with weekly live training, and library of recorded videos.
+                          Непрерывный центр обучения с еженедельными живыми тренингами и библиотекой записанных видео
                         </p>
-                        <Button size="sm" className="bg-white text-orange-500 hover:bg-white/90">
-                          Join the Academy
+                        <Button size="sm" className="gradient-primary text-white hover:opacity-90 transition-opacity shadow-sm">
+                          Присоединиться
                         </Button>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="glass-card bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-                  <CardContent className="p-6">
+                <Card className="glass-card bg-gradient-to-br from-accent/10 to-primary/5 border-accent/30 hover:border-accent/40 transition-all overflow-hidden relative group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <CardContent className="p-6 relative">
                     <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-lg bg-blue-500/20 text-blue-500">
+                      <div className="p-3 rounded-xl bg-gradient-to-br from-accent to-primary text-white shadow-md">
                         <Users2 className="w-8 h-8" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-lg mb-2">Join the Community!</h4>
+                        <h4 className="font-semibold text-lg mb-2" style={{ color: 'hsl(280 70% 55%)' }}>Присоединяйтесь к сообществу!</h4>
                         <p className="text-sm text-muted-foreground mb-4">
-                          A private group where users can share their creations, tips, and get advice.
+                          Приватная группа, где пользователи делятся своими творениями, советами и получают помощь
                         </p>
-                        <Button size="sm" className="bg-white text-blue-500 hover:bg-white/90">
-                          Join the Group
+                        <Button size="sm" className="bg-gradient-to-r from-accent to-primary text-white hover:opacity-90 transition-opacity shadow-sm">
+                          Вступить в группу
                         </Button>
                       </div>
                     </div>
